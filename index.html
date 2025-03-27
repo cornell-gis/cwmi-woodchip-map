@@ -9,7 +9,7 @@
         <link rel="stylesheet" href="css/leaflet.css">
         <link rel="stylesheet" href="css/Control.Geocoder.css">
         <link rel="stylesheet" href="css/qgis2web.css">
-        <title>NYS and Surrounding Compost Facilities</title>
+        <title>Woodchip Sources Map</title>
     </head>
     <body>
         <div id="map">
@@ -37,17 +37,13 @@
         };
         title.update = function () {
             this._div.innerHTML = `
-            <h2>NYS and Surrounding Compost Facilities</h2>
-            Owner type:
+            <h2>Woodchip Sources Map</h2>
+            Service:
             <table>
-                <tr><td style="text-align: center;"><img src="legend/compost_facility_survey_responses_1_2_CollegeUniversity0.png" /></td><td>College/University</td></tr>
-                <tr><td style="text-align: center;"><img src="legend/compost_facility_survey_responses_1_2_CornellCooperativeExtension1.png" /></td><td>Cornell Cooperative Extension</td></tr>
-                <tr><td style="text-align: center;"><img src="legend/compost_facility_survey_responses_1_2_Farm2.png" /></td><td>Farm</td></tr>
-                <tr><td style="text-align: center;"><img src="legend/compost_facility_survey_responses_1_2_Government3.png" /></td><td>Government</td></tr>
-                <tr><td style="text-align: center;"><img src="legend/compost_facility_survey_responses_1_2_Nonprofit4.png" /></td><td>Non-profit</td></tr>
-                <tr><td style="text-align: center;"><img src="legend/compost_facility_survey_responses_1_2_NYSDepartmentofCorrections5.png" /></td><td>NYS Department of Corrections</td></tr>
-                <tr><td style="text-align: center;"><img src="legend/compost_facility_survey_responses_1_2_PrivateOwner6.png" /></td><td>Private Owner</td></tr>
-                <tr><td style="text-align: center;"><img src="legend/compost_facility_survey_responses_1_2_School7.png" /></td><td>School</td></tr
+                <tr><td style="text-align: center;"><img src="legend/0_dropoff.png" /></td><td>Drop off</td></tr>
+                <tr><td style="text-align: center;"><img src="legend/1_pickup.png" /></td><td>Pick up</td></tr>
+                <tr><td style="text-align: center;"><img src="legend/2_dropoffandpickup.png" /></td><td>Drop off and Pick up</td></tr>
+                <!--<tr><td style="text-align: center;"><img src="legend/3_others.png" /></td><td>Other</td></tr>-->
             </table>
             `;
         };
@@ -109,243 +105,135 @@
         var bounds_group = new L.featureGroup([])
         bounds_group.addLayer(layer_counties_ny_1)
 
-        let compost_tooltip_template = `
-<h3 style=\"color:green; text-transform:uppercase; font-weight:bold; font-size:112%\">{{facilityname}}</h3>
+        let woodchip_tooltip_template = `
+<h3>{{name_of_facility}}</h3>
 
-{{#services}}
-<h4 style="color:green">Services</h4>
-<p>{{services}}</p>
-{{/services}}
+{{#city}}
+<h4>City</h4>
+<p>{{city}}</p>
+{{/city}}
 
-{{#owner}}
-<h4 style="color:green">Owner</h4>
-<p>{{owner}}</p>
-{{/owner}}
+{{#service}}
+<h4>Service</h4>
+<p>{{service}}</p>
+{{/service}}
 `
 
-        let compost_popup_template = `
-<h3 style=\"color:green; text-transform:uppercase; font-weight:bold; font-size:112%\">{{facilityname}}</h3>
+        let woodchip_popup_template = `
+<h3>{{name_of_facility}}</h3>
 
 {{#address}}
-<h4 style=\"color:green\"> Address</h4>
+<h4> Address</h4>
 <p>{{address}}</p>
 {{/address}}
 
-<p>{{city}}, {{state_province}} {{zip}}</p>
+<p>{{city}} {{zip_code}}</p>
 
 {{#county}}
 <p>{{county}} County</p>
 {{/county}}
 
-{{#contact}}
-<h4 style=\"color:green\">Contact</h4>
-<p>{{contact}}</p>
-{{/contact}}
+{{#contact_name}}
+<h4>Contact</h4>
+<p>{{contact_name}}</p>
+{{/contact_name}}
 
-{{#officephone}}
-<p>{{officephone}} (office)</p>
-{{/officephone}}
+{{#phone_1}}
+<p>{{phone_1}} </p>
+{{/phone_1}}
 
-{{#cellphone}}
-<p>{{cellphone}} (cell)</p>
-{{/cellphone}}
+{{#phone_2}}
+<p>{{phone_2}} (other phone number)</p>
+{{/phone_2}}
 
-{{#email}}
-<p><a href=\"mailto:{{email}}\">{{email}}</a></p>
-{{/email}}
+{{#e_mail_1}}
+<p><a href="mailto:{{e_mail_1}}">{{e_mail_1}}</a></p>
+{{/e_mail_1}}
 
-{{#website}}
-<p><a href=\"{{website}}\" target=\"_blank\">Go to website</a></p> {{/website}}
+{{#e_mail_2}}
+<p><a href="mailto:{{e_mail_2}}">{{e_mail_2}}</a></p>
+{{/e_mail_2}}
 
-{{#other_website}}
-<p><a href=\"{{other_website}}\" target=\"_blank\" >Go to alternate website</a></p> {{/other_website}}
+{{#drop_off}}
+<h4>Drop-off Instructions</h4> <p>{{drop_off}}</p>
+{{/drop_off}}
 
-{{#major_feedstock}}
-<h4 style=\"color:green\">Major Feedstock</h4> <p>{{major_feedstock}}</p> {{/major_feedstock}}
-
-{{#feedstocks_composted}}
-<h4 style=\"color:green\">Feedstocks Composted</h4> <p>{{feedstocks_composted}}</p> {{/feedstocks_composted}}
-
-{{#organics_sources}}
-<h4 style=\"color:green\">Source of Organics</h4> <p>{{organics_sources}}</p> {{/organics_sources}}
-
-{{#outside_sources}}
-<h4 style=\"color:green\">Accepts outside sources</h4> <p>{{outside_sources}}</p> {{/outside_sources}}
-
-{{#compost_process}}
-<h4 style=\"color:green\">Compost process</h4> <p>{{compost_process}}</p> {{/compost_process}}
-
-{{#compost_use}}
-<h4 style=\"color:green\">Compost use</h4> <p>{{compost_use}}</p> {{/compost_use}}
-
-{{#bin_sales}}
-<h4 style=\"color:green\">Bin sales</h4>
-<p>{{bin_sales}}</p>
-{{/bin_sales}}
-
-{{#classes_offered}}
-<h4 style=\"color:green\">Classes offered</h4> <p>{{classes_offered}}</p> {{/classes_offered}}
-
-{{#demonstrations}}
-<h4 style=\"color:green\">Demonstrations</h4>
-<p>{{demonstrations}}</p>
-{{/demonstrations}}
-
-{{#educational_materials}}
-<h4 style=\"color:green\">Educational materials</h4> <p>{{educational_materials}}</p> {{/educational_materials}}
+{{#pick_up}}
+<h4>Pick-up Instructions</h4> <p>{{pick_up}}</p>
+{{/pick_up}}
 `
 
-        function style_compost_facility_survey_responses_1_2_0(feature) {
-            switch(String(feature.properties['ownership'])) {
-                case 'College/University':
+function style_woodchip_map_3_2_0(feature) {
+            switch(String(feature.properties['service'])) {
+                case 'drop-off':
                     return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
+                pane: 'pane_woodchip_map_3_2',
                 radius: 5.4,
                 opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
+                color: 'rgba(0,0,0,1.0)',
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 weight: 1.5,
                 fill: true,
                 fillOpacity: 1,
-                fillColor: 'rgba(68,68,204,1.0)',
+                fillColor: 'rgba(191,63,141,1.0)',
                 interactive: true,
             }
                     break;
-                case 'Cornell Cooperative Extension':
+                case 'pick-up':
                     return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
+                pane: 'pane_woodchip_map_3_2',
                 radius: 5.4,
                 opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
+                color: 'rgba(0,0,0,1.0)',
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 weight: 1.5,
                 fill: true,
                 fillOpacity: 1,
-                fillColor: 'rgba(204,0,0,1.0)',
+                fillColor: 'rgba(232,132,80,1.0)',
                 interactive: true,
             }
                     break;
-                case 'Farm':
+                case 'drop-off and pick-up':
                     return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
+                pane: 'pane_woodchip_map_3_2',
                 radius: 5.4,
                 opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
+                color: 'rgba(0,0,0,1.0)',
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 weight: 1.5,
                 fill: true,
                 fillOpacity: 1,
-                fillColor: 'rgba(0,168,236,1.0)',
-                interactive: true,
-            }
-                    break;
-                case 'Government':
-                    return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
-                radius: 5.4,
-                opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
-                dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 1.5,
-                fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(248,244,0,1.0)',
-                interactive: true,
-            }
-                    break;
-                case 'Non-profit':
-                    return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
-                radius: 5.4,
-                opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
-                dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 1.5,
-                fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(255,165,0,1.0)',
-                interactive: true,
-            }
-                    break;
-                case 'NYS Department of Corrections':
-                    return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
-                radius: 5.4,
-                opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
-                dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 1.5,
-                fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(0,255,0,1.0)',
-                interactive: true,
-            }
-                    break;
-                case 'Private Owner':
-                    return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
-                radius: 5.4,
-                opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
-                dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 1.5,
-                fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(255,0,255,1.0)',
-                interactive: true,
-            }
-                    break;
-                case 'School':
-                    return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
-                radius: 5.4,
-                opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
-                dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 1.5,
-                fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(139,0,139,1.0)',
+                fillColor: 'rgba(247,211,75,1.0)',
                 interactive: true,
             }
                     break;
                 default:
                     return {
-                pane: 'pane_compost_facility_survey_responses_1_2',
+                pane: 'pane_woodchip_map_3_2',
                 radius: 5.4,
                 opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
+                color: 'rgba(0,0,0,1.0)',
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 weight: 1.5,
                 fill: true,
                 fillOpacity: 1,
-                fillColor: 'rgba(0,0,0,1.0)',
+                fillColor: 'rgba(124,124,124,1.0)',
                 interactive: true,
             }
                     break;
             }
         }
-        map.createPane('pane_compost_facility_survey_responses_1_2');
-        map.getPane('pane_compost_facility_survey_responses_1_2').style.zIndex = 402;
-        map.getPane('pane_compost_facility_survey_responses_1_2').style['mix-blend-mode'] = 'normal';
+        map.createPane('pane_woodchip_map_3_2');
+        map.getPane('pane_woodchip_map_3_2').style.zIndex = 402;
+        map.getPane('pane_woodchip_map_3_2').style['mix-blend-mode'] = 'normal';
 
         let gs_layer
 
@@ -353,8 +241,8 @@
 
         function loadGoogleSheet() {
           // URL for CSV version of the Google Spreadsheet
-          // which can be edited at https://docs.google.com/spreadsheets/d/1qdddXs_PzMwFsb3PMadLf9Dh7_UjBx6i7h8MDQRIRVI/edit?usp=sharing
-          url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSK8LWE8tmC0nVM_avgORvyVNYgxxkPO17QWqfE1XHiOqVevRrwuVucTvyfQElVeY_WCa36HBgLC2Hb/pub?gid=942959072&single=true&output=csv'
+          // which can be edited at https://docs.google.com/spreadsheets/d/1bKNOVa89aJMSgPJ7xHHabM-KNSC1PFCbl6nk5KoAjfU/edit?usp=sharing
+          url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSo68u6P9CAFHZiGBtQI2URuXT4tW6sCdE_hJ4nSDiKrilhSs2wfYO0-O89ZNcNKNREEid_CDXft69M/pub?gid=327478090&single=true&output=csv'
           //url = 'data/test.csv'
           fetch(url)
             .then((response) => {
@@ -362,13 +250,13 @@
                 gs_layer = L.geoCsv(csvtext, {
                   firstLineTitles: true,
                   fieldSeparator: ',',
-                  latitudeTitle: 'Latitude',
-                  longitudeTitle: 'Longitude',
+                  latitudeTitle: 'latitude',
+                  longitudeTitle: 'longitude',
                   pointToLayer: function(feature, latlng) {
-                    let popup = Mustache.render(compost_popup_template, feature.properties)
-                    let tooltip = Mustache.render(compost_tooltip_template, feature.properties)
-                    return L.circleMarker(latlng, style_compost_facility_survey_responses_1_2_0(feature))
-                      .bindTooltip(tooltip)
+                    let popup = Mustache.render(woodchip_popup_template, feature.properties)
+                    let tooltip = Mustache.render(woodchip_tooltip_template, feature.properties)
+                    return L.circleMarker(latlng, style_woodchip_map_3_2_0(feature))
+                      .bindTooltip(tooltip, { opacity: 1 })
                       .bindPopup(popup, { maxWidth: 360 })
                   }
                 })
